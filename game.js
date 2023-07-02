@@ -21,11 +21,15 @@ var ennemiesPool = [];
 var particlesPool = [];
 var particlesInUse = [];
 var showHome = false;
-var textureOption = {
+var texturePaths = {
 	None: null,
-	vietname_flag : "../texture/vietname_flag.jpg",
-	water :  "../texture/water.jpg",
+	vietnam_flag : "./textures/vietnam.jpg",
+	germany_flag : "./textures/germany.jpg",
+	korea_flag : "./textures/korea.jpg",
+	malaysia_flag : "./textures/malaysia.jpg",
+	stripes : "./textures/stripes.jpg",
 };
+var onChange = false;
 
 function resetGame() {
 	game = {
@@ -84,7 +88,7 @@ function resetGame() {
 		ennemiesSpeed: 0.6,
 		ennemyLastSpawn: 0,
 		distanceForEnnemiesSpawn: 50,
-		status: "playing",
+		status: "waiting",
 	};
 	fieldLevel.innerHTML = Math.floor(game.level);
 }
@@ -130,7 +134,7 @@ function createScene() {
 	camera.position.x = 0;
 	camera.position.z = 200;
 	camera.position.y = game.planeDefaultHeight;
-	//camera.lookAt(new THREE.Vector3(0, 400, 0));
+	// camera.lookAt(new THREE.Vector3(0, 400, 0));
 
 	renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 	renderer.setSize(WIDTH, HEIGHT);
@@ -191,10 +195,11 @@ function handleTouchEnd(event) {
 	}
 }
  function handleKeyPress(event){
-	if (game.status == "waiting") {
+		onChange = false;
 		resetGame();
+		game.status = "playing";
 		hideReplay();
-	}
+	
  }
 // LIGHTS
 
@@ -316,38 +321,17 @@ Pilot.prototype.updateHairs = function () {
 	this.angleHairs += game.speed * deltaTime * 40;
 	//*/
 };
-var matPlane = {
-	Cabin: null,
-	Engine: null,
-	TailPlane: null,
-	SideWing: null,
-	Windshield: null,
-	Propeller: null,
-	wheelProtect: null,
-}
-var mapPlane = {
-	Cabin: null,
-	Engine: null,
-	TailPlane: null,
-	SideWing: null,
-	Windshield: null,
-	Propeller: null,
-	wheelProtect: null,
-	wheelProtect: null,
-}
 
-var colorPlane = {
-	Cabin: Colors.red,
-	Engine: Colors.white,
-	TailPlane: Colors.red,
-	SideWing: Colors.red,
-	Windshield: Colors.white,
-	Propeller: Colors.brown,
-	wheelProtect: Colors.red,
-
-}
-
-var zipPlane = Object.keys(matPlane).map(function(e,i){ return [e, Object.keys(colorPlane)[i]]});
+var planeSetting = {
+	Cabin: {mat: null, color: Colors.red, surface : "None"},
+	Engine: {mat: null, color: Colors.white, surface : "None"},
+	TailPlane: {mat: null, color: Colors.red, surface : "None"},
+	SideWing: {mat: null, color: Colors.red, surface : "None"},
+	Windshield: {mat: null, color: Colors.white, surface : "None"},
+	Propeller: {mat: null, color: Colors.brown, surface : "None"},
+	wheelProtect: {mat: null, color: Colors.red, surface : "None"},
+};
+	
 
 var AirPlane = function () {
 	this.mesh = new THREE.Object3D();
@@ -356,11 +340,20 @@ var AirPlane = function () {
 	// Cabin
 
 	var geomCabin = new THREE.BoxGeometry(80, 50, 50, 1, 1, 1);
-	var matCabin = new THREE.MeshPhongMaterial({
-		color: colorPlane.Cabin,
-		shading: THREE.FlatShading,
-		
-	});
+	var matCabin;
+	if (planeSetting.Cabin.surface == "None"){
+		matCabin = new THREE.MeshPhongMaterial({
+			color: planeSetting.Cabin.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matCabin = new THREE.MeshPhongMaterial({
+			color: planeSetting.Cabin.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.Cabin.surface)
+		});
+	}
 	
 	geomCabin.vertices[4].y -= 10;
 	geomCabin.vertices[4].z += 20;
@@ -377,12 +370,22 @@ var AirPlane = function () {
 	this.mesh.add(cabin);
 
 	// Engine
-
 	var geomEngine = new THREE.BoxGeometry(20, 50, 50, 1, 1, 1);
-	var matEngine = new THREE.MeshPhongMaterial({
-		color: colorPlane.Engine,
-		shading: THREE.FlatShading,
-	});
+	var matEngine;
+	if (planeSetting.Engine.surface == "None"){
+		matEngine = new THREE.MeshPhongMaterial({
+			color: planeSetting.Engine.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matEngine = new THREE.MeshPhongMaterial({
+			color: planeSetting.Engine.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.Engine.surface)
+		});
+	}
+
 	var engine = new THREE.Mesh(geomEngine, matEngine);
 	engine.position.x = 50;
 	engine.castShadow = true;
@@ -392,10 +395,20 @@ var AirPlane = function () {
 	// Tail Plane
 
 	var geomTailPlane = new THREE.BoxGeometry(15, 20, 5, 1, 1, 1);
-	var matTailPlane = new THREE.MeshPhongMaterial({
-		color: colorPlane.TailPlane,
-		shading: THREE.FlatShading,
-	});
+	var matTailPlane;
+	if (planeSetting.TailPlane.surface == "None"){
+		matTailPlane = new THREE.MeshPhongMaterial({
+			color: planeSetting.TailPlane.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matTailPlane = new THREE.MeshPhongMaterial({
+			color: planeSetting.Engine.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.Engine.surface)
+		});
+	}
 	var tailPlane = new THREE.Mesh(geomTailPlane, matTailPlane);
 	tailPlane.position.set(-40, 20, 0);
 	tailPlane.castShadow = true;
@@ -405,10 +418,21 @@ var AirPlane = function () {
 	// Wings
 
 	var geomSideWing = new THREE.BoxGeometry(30, 5, 120, 1, 1, 1);
-	var matSideWing = new THREE.MeshPhongMaterial({
-		color: colorPlane.SideWing,
-		shading: THREE.FlatShading,
-	});
+	var matSideWing;
+	if (planeSetting.SideWing.surface == "None"){
+		matSideWing = new THREE.MeshPhongMaterial({
+			color: planeSetting.SideWing.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matSideWing = new THREE.MeshPhongMaterial({
+			color: planeSetting.SideWing.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.SideWing.surface)
+		});
+	}
+
 	var sideWing = new THREE.Mesh(geomSideWing, matSideWing);
 	sideWing.position.set(0, 15, 0);
 	sideWing.castShadow = true;
@@ -416,12 +440,20 @@ var AirPlane = function () {
 	this.mesh.add(sideWing);
 
 	var geomWindshield = new THREE.BoxGeometry(3, 15, 20, 1, 1, 1);
-	var matWindshield = new THREE.MeshPhongMaterial({
-		color: colorPlane.Windshield,
-		transparent: true,
-		opacity: 0.3,
-		shading: THREE.FlatShading,
-	});
+	var matWindshield;
+	if (planeSetting.Windshield.surface == "None"){
+		matWindshield = new THREE.MeshPhongMaterial({
+			color: planeSetting.Windshield.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matWindshield = new THREE.MeshPhongMaterial({
+			color: planeSetting.Windshield.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.Windshield.surface)
+		});
+	}
 	var windshield = new THREE.Mesh(geomWindshield, matWindshield);
 	windshield.position.set(5, 27, 0);
 
@@ -439,16 +471,27 @@ var AirPlane = function () {
 	geomPropeller.vertices[6].z += 5;
 	geomPropeller.vertices[7].y += 5;
 	geomPropeller.vertices[7].z -= 5;
-	var matPropeller = new THREE.MeshPhongMaterial({
-		color: colorPlane.Propeller,
-		shading: THREE.FlatShading,
-	});
+	var matPropeller;
+	if (planeSetting.Propeller.surface == "None"){
+		matPropeller = new THREE.MeshPhongMaterial({
+			color: planeSetting.Propeller.color,
+			shading: THREE.FlatShading,
+		});
+	}
+	else{
+		matPropeller = new THREE.MeshPhongMaterial({
+			color: planeSetting.Engine.color,
+			shading: THREE.FlatShading,
+			map: loader.load(planeSetting.Engine.surface)
+		});
+	}
 	this.propeller = new THREE.Mesh(geomPropeller, matPropeller);
 
 	this.propeller.castShadow = true;
 	this.propeller.receiveShadow = true;
 
 	var geomBlade = new THREE.BoxGeometry(1, 80, 10, 1, 1, 1);
+
 	var matBlade = new THREE.MeshPhongMaterial({
 		color: Colors.brownDark,
 		shading: THREE.FlatShading,
@@ -472,10 +515,20 @@ var AirPlane = function () {
 	this.mesh.add(this.propeller);
 
 	var wheelProtecGeom = new THREE.BoxGeometry(30, 15, 10, 1, 1, 1);
-	var wheelProtecMat = new THREE.MeshPhongMaterial({
-		color: colorPlane.wheelProtect,
-		shading: THREE.FlatShading,
-	});
+		var wheelProtecMat;
+		if (planeSetting.wheelProtect.surface == "None"){
+			wheelProtecMat = new THREE.MeshPhongMaterial({
+				color: planeSetting.wheelProtect.color,
+				shading: THREE.FlatShading,
+			});
+		}
+		else{
+			wheelProtecMat = new THREE.MeshPhongMaterial({
+				color: planeSetting.wheelProtect.color,
+				shading: THREE.FlatShading,
+				map: loader.load(planeSetting.wheelProtect.surface)
+			});
+		}
 	var wheelProtecR = new THREE.Mesh(wheelProtecGeom, wheelProtecMat);
 	wheelProtecR.position.set(25, -20, 25);
 	this.mesh.add(wheelProtecR);
@@ -529,13 +582,13 @@ var AirPlane = function () {
 	this.mesh.castShadow = true;
 	this.mesh.receiveShadow = true;
 
-	matPlane.Cabin = matCabin;
-	matPlane.Engine = matEngine;
-	matPlane.Propeller = matPropeller;
-	matPlane.TailPlane = matTailPlane;
-	matPlane.SideWing = matSideWing;
-	matPlane.Windshield = matWindshield;
-	matPlane.wheelProtect = wheelProtecMat;
+	planeSetting.Cabin.mat = matCabin;
+	planeSetting.Engine.mat = matEngine;
+	planeSetting.Propeller.mat = matPropeller;
+	planeSetting.TailPlane.mat = matTailPlane;
+	planeSetting.SideWing.mat = matSideWing;
+	planeSetting.Windshield.mat = matWindshield;
+	planeSetting.wheelProtect.mat = wheelProtecMat;
 	
 };
 
@@ -597,6 +650,7 @@ Sea = function () {
 				Math.random() * (game.wavesMaxSpeed - game.wavesMinSpeed),
 		});
 	}
+	
 	var mat = new THREE.MeshPhongMaterial({
 		color: Colors.blue,
 		transparent: true,
@@ -903,6 +957,7 @@ function createPlane() {
 	airplane.mesh.scale.set(0.25, 0.25, 0.25);
 	airplane.mesh.position.y = game.planeDefaultHeight;
 	scene.add(airplane.mesh);
+
 }
 
 function createSea() {
@@ -1004,6 +1059,12 @@ function loop() {
 		}
 	} else if (game.status == "waiting") {
 		showReplay();
+		if (airplane.mesh.position.y < game.planeDefaultHeight )
+			airplane.mesh.position.y += 0.01;
+		if (airplane.mesh.position.y < game.planeDefaultHeight )
+			airplane.mesh.position.y += 0.01;
+		updatePlane();
+		
 	}
 
 	airplane.propeller.rotation.x += 0.2 + game.planeSpeed * deltaTime * 0.005;
@@ -1018,6 +1079,20 @@ function loop() {
 
 	sky.moveClouds();
 	sea.moveWaves();
+
+	if (onChange){
+		if (camera.position.z > 100)
+			camera.position.z -= 1;
+		else if (camera.position.z <100)
+			camera.position.z += 1;
+	}
+	else{
+
+		if (camera.position.z > 200)
+			camera.position.z -= 1;
+		else if (camera.position.z <200)
+			camera.position.z += 1;
+	}
 
 	renderer.render(scene, camera);
 	requestAnimationFrame(loop);
@@ -1156,9 +1231,7 @@ function init(event) {
 	levelCircle = document.getElementById("levelCircleStroke");
 
 	resetGame();
-	game.status = "waiting";
 	createScene();
-
 	createLights();
 	createPlane();
 	createSea();
@@ -1166,48 +1239,40 @@ function init(event) {
 	createCoins();
 	createEnnemies();
 	createParticles();
-	
+
 	var gui = new dat.GUI();
 	gui.domElement.id = "GUI";
 	
-	var option = {Airplane_parts : "Cabin"};
-	var surface = {Surface : null};
-	var planeSetting ={};
-	for (var key in matPlane) {
-		planeSetting[key] = {
-								mat: matPlane[key],
-								color: colorPlane[key],
-								surface: "Cabin",
-							};
-		}
+	var option = {Airplane_parts : "None"};
+	
 	var colorElement = null;
 	var surfaceElement = null;
 
-	gui.add(option, "Airplane_parts", ["Cabin"].concat(Object.keys(colorPlane)))
+	gui.add(option, "Airplane_parts", ["None"].concat(Object.keys(planeSetting)))
 	.onChange(function(value){
+		
+		onChange = true;
 		if (colorElement){
 			gui.remove(colorElement);
 			gui.remove(surfaceElement);
 		}
-	});
-
-	let part = planeSetting[option.Airplane_parts];
-		colorElement = gui.addColor(part, "color").name("color").onChange(function(){
+		let part = planeSetting[value];
+		colorElement = gui.addColor(part, "color").onChange(function(){
+			onChange = true;
 			part.mat.color.set(part.color);
 		});
 		
-		surfaceElement = gui.add(part,'surface', Object.keys(textureOption))
-							.name("surface")
+		surfaceElement = gui.add(part,'surface', Object.keys(texturePaths))
 							.onChange(function(){
-			while (this.mesh.children.length > 0) {
-				this.mesh.remove(this.mesh.children[0]);
-				}
-			// part.mat.map = loader.load(textureOption[part.surface]);
-			// console.log(textureOption[part.surface]);
-		});
-		
-	
+			onChange = true;
+			planeSetting[value] = part;
+			planeSetting[value].surface = texturePaths[part.surface];
+			scene.remove(scene.getObjectByName("airPlane"));
+			createPlane();
 
+	
+		});
+	});
 	document.addEventListener("mousemove", handleMouseMove, false);
 	// document.addEventListener("touchmove", handleTouchMove, false);
 	// document.addEventListener("mouseup", handleMouseUp, false);
