@@ -5,12 +5,7 @@
 	background: -webkit-linear-gradient(#e4e0bb, #f7d9aa);
 	background: linear-gradient(#e4e0ba, #f7d9aa);
 	transition: background-color 1s ease;
-}
-
-.night {
-	background: linear-gradient(#34374e, #2a1e45);
-}
-  
+}  
 
 .world {
 	position: absolute;

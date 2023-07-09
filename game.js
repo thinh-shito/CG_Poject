@@ -155,9 +155,9 @@ function createScene() {
   // controls = new THREE.OrbitControls(camera, renderer.domElement);
   // controls.minPolarAngle = -Math.PI / 2;
   // controls.maxPolarAngle = Math.PI ;
-
-  // //controls.noZoom = true;
-  // //controls.noPan = true;
+  // scene.add(controls);
+  // controls.noZoom = true;
+  // controls.noPan = true;
 }
 
 // MOUSE AND SCREEN EVENTS
@@ -227,7 +227,7 @@ function createLights() {
 
   var ch = new THREE.CameraHelper(shadowLight.shadow.camera);
 
-  //scene.add(ch);
+  // scene.add(ch);
   scene.add(hemisphereLight);
   scene.add(shadowLight);
   scene.add(ambientLight);
@@ -589,10 +589,13 @@ var AirPlane = function () {
   planeSetting.wheelProtect.mat = wheelProtecMat;
 };
 
+var n = 200;
 Sky = function () {
   this.mesh = new THREE.Object3D();
   this.nClouds = 20;
+  this.nStars = n ;
   this.clouds = [];
+  this.stars = [];
   var stepAngle = (Math.PI * 2) / this.nClouds;
   for (var i = 0; i < this.nClouds; i++) {
     var c = new Cloud();
@@ -607,13 +610,46 @@ Sky = function () {
     c.mesh.scale.set(s, s, s);
     this.mesh.add(c.mesh);
   }
+
+
 };
+
+Sky.prototype.addStar = function(){
+
+  if(this.nStars > 0){
+    this.nStars -= 1;
+    var stepAngle = (Math.PI * 2) / n;
+    var a = stepAngle * this.nStars;
+    var h = game.seaRadius + 250 + Math.random() * n;
+    var c = new Star();
+    c.mesh.position.y = Math.sin(a) * h;
+    c.mesh.position.x = Math.cos(a) * h;
+    c.mesh.position.z = -300 - Math.random() * 1000;
+    c.mesh.rotation.z = a + Math.PI / 2;
+    var s = 1 + Math.random() * 2;
+    c.mesh.scale.set(s, s, s);
+    this.mesh.add(c.mesh);
+    this.stars.push(c);
+
+  }
+  for (var i = 0; i < n - this.nStars; i++) {
+    var c = this.stars[i];
+    c.rotate();
+  }
+}
+
+Sky.prototype.removeStars = function(){
+  this.mesh.remove(this.mesh.getObjectByName("star"));
+  this.nStars = 200;
+  this.stars = [];
+}
 
 Sky.prototype.moveClouds = function () {
   for (var i = 0; i < this.nClouds; i++) {
     var c = this.clouds[i];
     c.rotate();
   }
+  
   this.mesh.rotation.z += game.speed * deltaTime;
 };
 
@@ -945,6 +981,20 @@ CoinsHolder.prototype.rotateCoins = function () {
   }
 };
 
+Star = function (){
+
+  var geometry   = new THREE.SphereGeometry(0.5, 32, 32)
+  var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+  this.mesh = new THREE.Mesh(geometry, material)
+  this.mesh.name = "star";
+}
+
+Star.prototype.rotate = function(){
+  this.mesh.rotation.z += 0.01;
+  this.mesh.rotation.y += 0.01;
+  this.mesh.rotation.x += 0.01;
+}
+
 // 3D Models
 var sea;
 var airplane;
@@ -955,7 +1005,19 @@ function createPlane() {
   airplane.mesh.position.y = game.planeDefaultHeight;
   scene.add(airplane.mesh);
 }
+function getPlane(size) {
+  var geometry = new THREE.PlaneGeometry(size, size);
+  var material = new THREE.MeshStandardMaterial({
+      color: "#15151f",
+      side: THREE.DoubleSide,
+  });
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.receiveShadow = true; // Receive shadow (Nhận đỗ bóng).
+  mesh.rotation.x = Math.PI / 2;
+  mesh.name = "Plane";
 
+  return mesh;
+}
 function createSea() {
   sea = new Sea();
   sea.mesh.position.y = -game.seaRadius;
@@ -1044,19 +1106,7 @@ function loop() {
       (game.targetBaseSpeed - game.baseSpeed) * deltaTime * 0.02;
     game.speed = game.baseSpeed * game.planeSpeed;
 
-    if (game.level % 2)
-    {
-      // scene.getObjectByName("waves").material.color.set(Colors.blue);
-      scene.remove(scene.getObjectByName("hemisphereLight"));
-      scene.add(hemisphereLight);
-      background.style.background = game.dayBackground;
-    }
-    else{
-      // scene.getObjectByName("waves").material.color.set(Colors.nightBlue);
-      scene.remove(scene.getObjectByName("hemisphereLight"));
-
-      background.style.background = game.nightBackground;
-    }
+    
   } else if (game.status == "gameover") {
     game.speed *= 0.99;
     airplane.mesh.rotation.z +=
@@ -1076,10 +1126,24 @@ function loop() {
       airplane.mesh.position.y += 0.01;
     updatePlane();
   }
+  else if (game.status = "custom"){
+    header.style.display = "none";
+  }
 
-
- 
-
+  if (game.level % 2)
+    {
+      // scene.getObjectByName("waves").material.color.set(Colors.blue);
+      scene.remove(scene.getObjectByName("hemisphereLight"));
+      scene.add(hemisphereLight);
+      sky.removeStars();
+      background.style.background = game.dayBackground;
+    }
+    else{
+      // scene.getObjectByName("waves").material.color.set(Colors.nightBlue);
+      scene.remove(scene.getObjectByName("hemisphereLight"));
+      sky.addStar();
+      background.style.background = game.nightBackground;
+    }
 
   airplane.propeller.rotation.x += 0.2 + game.planeSpeed * deltaTime * 0.005;
   sea.mesh.rotation.z += game.speed * deltaTime; //*game.seaRotationSpeed;
@@ -1232,35 +1296,7 @@ function normalize(v, vmin, vmax, tmin, tmax) {
   return tv;
 }
 
-var fieldDistance,
-    energyBar,
-    replayMessage,
-    fieldLevel,
-    levelCircle,
-    highScore,
-    background;
-
-function init(event) {
-  // UI
-
-  fieldDistance = document.getElementById("distValue");
-  energyBar = document.getElementById("energyBar");
-  replayMessage = document.getElementById("playMessage");
-  fieldLevel = document.getElementById("levelValue");
-  levelCircle = document.getElementById("levelCircleStroke");
-  highScore = document.getElementById("highScoreValue");
-  background = document.getElementById("gameHolder");
-  resetGame();
-  createScene();
-  createLights();
-  createPlane();
-  createSea();
-  createSky();
-  createCoins();
-  createEnnemies();
-  createParticles();
-
-
+function createGui(){
   gui = new dat.GUI();
   gui.domElement.id = "GUI";
 
@@ -1297,14 +1333,50 @@ function init(event) {
     gui.close();
     // onChange = false;
   }
+}
+
+var fieldDistance,
+    energyBar,
+    replayMessage,
+    fieldLevel,
+    levelCircle,
+    highScore,
+    background,
+    header;
+function custom(event){
+  
+}
+function init(event) {
+  // UI
+
+  fieldDistance = document.getElementById("distValue");
+  energyBar = document.getElementById("energyBar");
+  replayMessage = document.getElementById("playMessage");
+  fieldLevel = document.getElementById("levelValue");
+  levelCircle = document.getElementById("levelCircleStroke");
+  highScore = document.getElementById("highScoreValue");
+  background = document.getElementById("gameHolder");
+  header = document.getElementById("header");
+  resetGame();
+  createScene();
+  createLights();
+  createPlane();
+  createSea();
+  createSky();
+  createCoins();
+  createEnnemies();
+  createParticles();
+  createGui();
+  
   document.addEventListener("mousemove", handleMouseMove, false);
   // document.addEventListener("touchmove", handleTouchMove, false);
   // document.addEventListener("mouseup", handleMouseUp, false);
   document.addEventListener("touchend", handleTouchEnd, false);
   document.addEventListener("keypress", handleKeyPress, false);
-  
+
   loop();
 }
+
 
 
 window.addEventListener("load", init, false);

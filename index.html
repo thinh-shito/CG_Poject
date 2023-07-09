@@ -16,13 +16,10 @@
 		<script type="text/javascript" src="lib/three.min.js"></script>
 		<script type="text/javascript" src="lib/OrbitControls.js"></script>
 		<script type="text/javascript" src="game.js" ></script>  
-		<!--[if IE]>
-		  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-		<![endif]-->
 	</head>
 	<body>
 		<div class="game-holder" id="gameHolder">
-			<div class="header">
+			<div class="header" id="header">
 				<h1>Th^3^Game<span></span></h1>
 				<h2>fly it to the end</h2>
 				<div class="score" id="score">
@@ -51,6 +48,7 @@
 				</div>
 			</div>
 			<div class="world" id="world"></div>
+			<div class="custom" id="custom"></div>
 			<div class="message message--play" id="playMessage">Enter to Play</div>
 			<div class="message message--instructions" id="instructions">
 				Press any to start
@@ -58,11 +56,10 @@
 				<span>avoid the red ones</span>
 			</div>
 			<div class="night" id = "night"></div>
-			<!-- <script>
-				setTimeout(function () {
-				  document.gameHolder.style.backgroundColor = "black";
-				}, 1000);
-			  </script> -->
 		</div>
+		<nav class="meta">
+			<a class="demo-link" id="home">Home</a>
+			<a class="demo-link" id="custom">Custom</a>
+		</nav>
 	</body>
 </html>
