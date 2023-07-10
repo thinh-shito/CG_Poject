@@ -55,11 +55,28 @@
 				<span>Grab the blue pills</span>
 				<span>avoid the red ones</span>
 			</div>
-			<div class="night" id = "night"></div>
+			<nav class="meta">
+				<a class="demo-link" id="home" onClick="window.location.reload();">Home</a>
+				<a class="demo-link" id="custom" onclick ="GUI()" >Custom</a>
+				<script>
+					var onClick = false;
+					function GUI(){
+						onClick =!onClick;
+						if (onClick)
+							showGUI();
+						else
+							hideGUI();
+
+					}
+					function hideGUI() {
+						document.getElementById("GUI").style.display = "none";
+						}
+					function showGUI() {
+						document.getElementById("GUI").style.display = "inline";
+						}
+				</script>
+			</nav>
 		</div>
-		<!-- <nav class="meta">
-			<a class="demo-link" id="home">Home</a>
-			<a class="demo-link" id="custom">Custom</a>
-		</nav> -->
+		
 	</body>
 </html>

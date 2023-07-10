@@ -27,7 +27,7 @@ a {
 }
 
 a:hover{
-	color:#444 ;
+	color:#9f793f;
 }
 a:focus {
 	color: #bba077;
@@ -66,6 +66,9 @@ a:focus {
 	padding: 1em 1.35em;
 	border: 1px solid #d1b790;
 	border-top: 0;
+}
+.meta a:hover{
+	
 }
 
 .meta a:not(:last-child) {

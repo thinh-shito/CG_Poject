@@ -171,6 +171,7 @@ function handleWindowResize() {
 }
 
 function handleMouseMove(event) {
+  event.preventDefault();
   var tx = -1 + (event.clientX / WIDTH) * 2;
   var ty = 1 - (event.clientY / HEIGHT) * 2;
   mousePos = { x: tx, y: ty };
@@ -1154,7 +1155,7 @@ function loop() {
 
   coinsHolder.rotateCoins();
   ennemiesHolder.rotateEnnemies();
-
+  onChange = (document.getElementById("GUI").style.display != "none") ;
   sky.moveClouds();
   sea.moveWaves();
 
@@ -1307,21 +1308,18 @@ function createGui(){
 
   gui.add(option, "Airplane_parts", ["None"].concat(Object.keys(planeSetting)))
     .onChange(function (value) {
-      onChange = true;
       if (colorElement) {
         gui.remove(colorElement);
         gui.remove(surfaceElement);
       }
       let part = planeSetting[value];
       colorElement = gui.addColor(part, "color").onChange(function () {
-        onChange = true;
         part.mat.color.set(part.color);
       });
 
       surfaceElement = gui
         .add(part, "surface", Object.keys(texturePaths))
         .onChange(function () {
-          onChange = true;
           planeSetting[value] = part;
           planeSetting[value].surface = texturePaths[part.surface];
           scene.remove(scene.getObjectByName("airPlane"));
@@ -1342,7 +1340,8 @@ var fieldDistance,
     levelCircle,
     highScore,
     background,
-    header;
+    header,
+    customOnClick;
 function custom(event){
   
 }
@@ -1357,6 +1356,7 @@ function init(event) {
   highScore = document.getElementById("highScoreValue");
   background = document.getElementById("gameHolder");
   header = document.getElementById("header");
+  customOnClick = false;
   resetGame();
   createScene();
   createLights();
@@ -1367,13 +1367,12 @@ function init(event) {
   createEnnemies();
   createParticles();
   createGui();
-  
   document.addEventListener("mousemove", handleMouseMove, false);
   // document.addEventListener("touchmove", handleTouchMove, false);
   // document.addEventListener("mouseup", handleMouseUp, false);
   document.addEventListener("touchend", handleTouchEnd, false);
   document.addEventListener("keypress", handleKeyPress, false);
-
+  document.getElementById("GUI").style.display = "none"; 
   loop();
 }
 
