@@ -6,8 +6,8 @@ var Colors = {
   brownDark: 0x23190f,
   pink: 0xf5986e,
   yellow: 0xf4ce93,
-  blue: 0x68c3c0,
-  nightBlue:0x346160,
+  blue:0x19376D,
+  nightBlue: 0x346160,
 };
 
 ///////////////
@@ -23,12 +23,14 @@ var particlesInUse = [];
 var showHome = false;
 var gui;
 var texturePaths = {
-  None: null,
+  None: "None",
   vietnam_flag: "./textures/vietnam.jpg",
   germany_flag: "./textures/germany.jpg",
   korea_flag: "./textures/korea.jpg",
   malaysia_flag: "./textures/malaysia.jpg",
   stripes: "./textures/stripes.jpg",
+  grunge_dusty: "./textures/grunge-dusty.jpg",
+  seamless: "./textures/seamless.jpg",
 };
 var onChange = false;
 
@@ -44,7 +46,7 @@ function resetGame() {
     speedLastUpdate: 0,
 
     distance: 0,
-	highscore: 0, 
+    highscore: 0,
     ratioSpeedDistance: 50,
     energy: 100,
     ratioSpeedEnergy: 3,
@@ -86,8 +88,8 @@ function resetGame() {
     coinLastSpawn: 0,
     distanceForCoinsSpawn: 100,
 
-    dayBackground : "linear-gradient(#e4e0ba, #f7d9aa)",
-    nightBackground : "linear-gradient(#34374e, #2a1e45)",
+    dayBackground: "linear-gradient(#62b7f4, #48a7fa)",
+    nightBackground: "linear-gradient(#34374e, #2a1e45)",
     ennemyDistanceTolerance: 10,
     ennemyValue: 10,
     ennemiesSpeed: 0.6,
@@ -232,7 +234,6 @@ function createLights() {
   scene.add(hemisphereLight);
   scene.add(shadowLight);
   scene.add(ambientLight);
-  
 }
 
 var Pilot = function () {
@@ -332,8 +333,8 @@ var planeSetting = {
   Engine: { mat: null, color: Colors.white, surface: "None" },
   TailPlane: { mat: null, color: Colors.red, surface: "None" },
   SideWing: { mat: null, color: Colors.red, surface: "None" },
-  Windshield: { mat: null, color: Colors.white, surface: "None" },
-  Propeller: { mat: null, color: Colors.brown, surface: "None" },
+  // Windshield: { mat: null, color: Colors.white, surface: "None" },
+  // Propeller: { mat: null, color: Colors.brown, surface: "None" },
   wheelProtect: { mat: null, color: Colors.red, surface: "None" },
 };
 
@@ -343,15 +344,31 @@ var AirPlane = function () {
 
   // Cabin
 
-  var geomCabin = new THREE.BoxGeometry(80, 50, 50, 1, 1, 1);
-  geomCabin.vertices[4].y -= 10;
-  geomCabin.vertices[4].z += 20;
-  geomCabin.vertices[5].y -= 10;
-  geomCabin.vertices[5].z -= 20;
-  geomCabin.vertices[6].y += 30;
-  geomCabin.vertices[6].z += 20;
-  geomCabin.vertices[7].y += 30;
-  geomCabin.vertices[7].z -= 20;
+  var geomCabin = new THREE.BoxGeometry(80, 50, 50, 2, 1, 1);
+  var vertices = geomCabin.vertices;
+  // console.log(vertices.length);
+  for (var i = 0; i < vertices.length; i++) {
+    var vertex = vertices[i];
+    // console.log(i,vertex);
+    if(vertex.x == -40 && vertex.y == -25 && Math.abs(vertex.z) == 25){
+      vertex.y += 30;
+      vertex.z = vertex.z + 20 * (vertex.z > 0?-1 :1);
+    }
+    else if(vertex.x == -40 && vertex.y == 25 && Math.abs(vertex.z) == 25){
+      vertex.y -=10;
+      vertex.z = vertex.z + 20 * (vertex.z > 0?-1 :1);
+    }
+    else if(vertex.x == 0 && vertex.y == -25 && Math.abs(vertex.z) == 25){
+      vertex.y += 10;
+      vertex.z = vertex.z + 10 * (vertex.z > 0?-1 :1);
+
+    }
+    else if(vertex.x == 0 && vertex.y == 25 && Math.abs(vertex.z) == 25){
+      vertex.y -= 5;
+      vertex.z = vertex.z + 10 * (vertex.z > 0?-1 :1);
+
+    }
+  }
 
   var matCabin;
   if (planeSetting.Cabin.surface == "None") {
@@ -367,15 +384,31 @@ var AirPlane = function () {
     });
   }
 
-  
-
   var cabin = new THREE.Mesh(geomCabin, matCabin);
   cabin.castShadow = true;
   cabin.receiveShadow = true;
   this.mesh.add(cabin);
 
   // Engine
-  var geomEngine = new THREE.BoxGeometry(20, 50, 50, 1, 1, 1);
+  var geomEngine = new THREE.BoxGeometry(20, 50, 50, 3, 1, 1);
+  var vertices = geomEngine.vertices;
+  vertices[0].y -= 14;
+  vertices[1].y -= 14;
+  vertices[2].y += 14;
+  vertices[3].y += 14;
+  vertices[0].z -= 14;
+  vertices[1].z += 14;
+  vertices[2].z -= 14;
+  vertices[3].z += 14;
+  vertices[9].y -= 6;
+  vertices[11].y -= 6;
+  vertices[13].y += 6;
+  vertices[15].y += 6;
+  vertices[9].z += 6;
+  vertices[11].z -= 6;
+  vertices[13].z -= 6;
+  vertices[15].z += 6;
+
   var matEngine;
   if (planeSetting.Engine.surface == "None") {
     matEngine = new THREE.MeshPhongMaterial({
@@ -420,7 +453,38 @@ var AirPlane = function () {
 
   // Wings
 
-  var geomSideWing = new THREE.BoxGeometry(30, 5, 120, 1, 1, 1);
+  var geomSideWing = new THREE.BoxGeometry(30, 6, 120, 3, 1, 1);
+
+  // var vertices = geomSideWing.vertices;
+  // console.log(vertices.length);
+  // for (var i = 0; i < vertices.length; i++) {
+  //   var vertex = vertices[i];
+  //   console.log(vertex);
+  //   if (vertex.x == -15 && vertex.y == 3 && vertex.z == 60) {
+  //     vertex.y -=1.5;
+  //   }
+  //   if (vertex.x == -15 && vertex.y == 3 && vertex.z == -60) {
+  //     vertex.y -=1.5;
+  //   }
+  //   if (vertex.x == -5 && vertex.y == 3 && vertex.z == 60) {
+  //     vertex.y -= 0.5;
+  //   }
+  //   if (vertex.x == -5 && vertex.y == 3 && vertex.z == -60) {
+  //     vertex.y -= 0.5;
+  //   }
+  //   if (vertex.x == 15 && vertex.y == 3 && vertex.z == 60) {
+  //     vertex.y -=1.25;
+  //   }
+  //   if (vertex.x == 15 && vertex.y == 3 && vertex.z == -60) {
+  //     vertex.y -=1.25;
+  //   }
+  //   if (vertex.x == 15 && vertex.y == -3 && vertex.z == 60) {
+  //     vertex.y += 0.75;
+  //   }
+  //   if (vertex.x == 15 && vertex.y == -3 && vertex.z == -60) {
+  //     vertex.y += 0.75;
+  //   }
+  // }
   var matSideWing;
   if (planeSetting.SideWing.surface == "None") {
     matSideWing = new THREE.MeshPhongMaterial({
@@ -442,19 +506,11 @@ var AirPlane = function () {
   this.mesh.add(sideWing);
 
   var geomWindshield = new THREE.BoxGeometry(3, 15, 20, 1, 1, 1);
-  var matWindshield;
-  if (planeSetting.Windshield.surface == "None") {
-    matWindshield = new THREE.MeshPhongMaterial({
-      color: planeSetting.Windshield.color,
-      shading: THREE.FlatShading,
-    });
-  } else {
-    matWindshield = new THREE.MeshPhongMaterial({
-      color: planeSetting.Windshield.color,
-      shading: THREE.FlatShading,
-      map: loader.load(planeSetting.Windshield.surface),
-    });
-  }
+  var matWindshield = new THREE.MeshPhongMaterial({
+    color: Colors.white,
+    shading: THREE.FlatShading,
+  });
+
   var windshield = new THREE.Mesh(geomWindshield, matWindshield);
   windshield.position.set(5, 27, 0);
 
@@ -472,19 +528,11 @@ var AirPlane = function () {
   geomPropeller.vertices[6].z += 5;
   geomPropeller.vertices[7].y += 5;
   geomPropeller.vertices[7].z -= 5;
-  var matPropeller;
-  if (planeSetting.Propeller.surface == "None") {
-    matPropeller = new THREE.MeshPhongMaterial({
-      color: planeSetting.Propeller.color,
-      shading: THREE.FlatShading,
-    });
-  } else {
-    matPropeller = new THREE.MeshPhongMaterial({
-      color: planeSetting.Engine.color,
-      shading: THREE.FlatShading,
-      map: loader.load(planeSetting.Engine.surface),
-    });
-  }
+
+  var matPropeller = new THREE.MeshPhongMaterial({
+    color: Colors.brownDark,
+    shading: THREE.FlatShading,
+  });
   this.propeller = new THREE.Mesh(geomPropeller, matPropeller);
 
   this.propeller.castShadow = true;
@@ -511,7 +559,7 @@ var AirPlane = function () {
 
   this.propeller.add(blade1);
   this.propeller.add(blade2);
-  this.propeller.position.set(60, 0, 0);
+  this.propeller.position.set(58, 0, 0);
   this.mesh.add(this.propeller);
 
   var wheelProtecGeom = new THREE.BoxGeometry(30, 15, 10, 1, 1, 1);
@@ -532,15 +580,17 @@ var AirPlane = function () {
   wheelProtecR.position.set(25, -20, 25);
   this.mesh.add(wheelProtecR);
 
-  var wheelTireGeom = new THREE.BoxGeometry(24, 24, 4);
+  var wheelTireGeom = new THREE.CylinderGeometry(13,13,4,12,10,);
+
   var wheelTireMat = new THREE.MeshPhongMaterial({
     color: Colors.brownDark,
     shading: THREE.FlatShading,
   });
   var wheelTireR = new THREE.Mesh(wheelTireGeom, wheelTireMat);
+  wheelTireR.rotation.x += Math.PI/2;
   wheelTireR.position.set(25, -28, 25);
 
-  var wheelAxisGeom = new THREE.BoxGeometry(10, 10, 6);
+  var wheelAxisGeom = new THREE.CylinderGeometry(5,5,6,12,10,);
   var wheelAxisMat = new THREE.MeshPhongMaterial({
     color: Colors.brown,
     shading: THREE.FlatShading,
@@ -583,10 +633,8 @@ var AirPlane = function () {
 
   planeSetting.Cabin.mat = matCabin;
   planeSetting.Engine.mat = matEngine;
-  planeSetting.Propeller.mat = matPropeller;
   planeSetting.TailPlane.mat = matTailPlane;
   planeSetting.SideWing.mat = matSideWing;
-  planeSetting.Windshield.mat = matWindshield;
   planeSetting.wheelProtect.mat = wheelProtecMat;
 };
 
@@ -594,7 +642,7 @@ var n = 200;
 Sky = function () {
   this.mesh = new THREE.Object3D();
   this.nClouds = 20;
-  this.nStars = n ;
+  this.nStars = n;
   this.clouds = [];
   this.stars = [];
   var stepAngle = (Math.PI * 2) / this.nClouds;
@@ -611,13 +659,10 @@ Sky = function () {
     c.mesh.scale.set(s, s, s);
     this.mesh.add(c.mesh);
   }
-
-
 };
 
-Sky.prototype.addStar = function(){
-
-  if(this.nStars > 0){
+Sky.prototype.addStar = function () {
+  if (this.nStars > 0) {
     this.nStars -= 1;
     var stepAngle = (Math.PI * 2) / n;
     var a = stepAngle * this.nStars;
@@ -631,26 +676,25 @@ Sky.prototype.addStar = function(){
     c.mesh.scale.set(s, s, s);
     this.mesh.add(c.mesh);
     this.stars.push(c);
-
   }
   for (var i = 0; i < n - this.nStars; i++) {
     var c = this.stars[i];
     c.rotate();
   }
-}
+};
 
-Sky.prototype.removeStars = function(){
+Sky.prototype.removeStars = function () {
   this.mesh.remove(this.mesh.getObjectByName("star"));
   this.nStars = 200;
   this.stars = [];
-}
+};
 
 Sky.prototype.moveClouds = function () {
   for (var i = 0; i < this.nClouds; i++) {
     var c = this.clouds[i];
     c.rotate();
   }
-  
+
   this.mesh.rotation.z += game.speed * deltaTime;
 };
 
@@ -690,6 +734,7 @@ Sea = function () {
     transparent: true,
     opacity: 0.8,
     shading: THREE.FlatShading,
+
   });
 
   this.mesh = new THREE.Mesh(geom, mat);
@@ -713,7 +758,7 @@ Sea.prototype.moveWaves = function () {
 Cloud = function () {
   this.mesh = new THREE.Object3D();
   this.mesh.name = "cloud";
-  var geom = new THREE.CubeGeometry(20, 20, 20);
+  var geom = new THREE.BoxGeometry(20, 20, 20);
   var mat = new THREE.MeshPhongMaterial({
     color: Colors.white,
   });
@@ -723,8 +768,8 @@ Cloud = function () {
   for (var i = 0; i < nBlocs; i++) {
     var m = new THREE.Mesh(geom.clone(), mat);
     m.position.x = i * 15;
-    m.position.y = Math.random() * 10;
-    m.position.z = Math.random() * 10;
+    m.position.y = Math.random() * 8;
+    m.position.z = Math.random() * 8;
     m.rotation.z = Math.random() * Math.PI * 2;
     m.rotation.y = Math.random() * Math.PI * 2;
     var s = 0.1 + Math.random() * 0.9;
@@ -982,19 +1027,18 @@ CoinsHolder.prototype.rotateCoins = function () {
   }
 };
 
-Star = function (){
-
-  var geometry   = new THREE.SphereGeometry(0.5, 32, 32)
-  var material = new THREE.MeshBasicMaterial( {color: 0xffffff} );
-  this.mesh = new THREE.Mesh(geometry, material)
+Star = function () {
+  var geometry = new THREE.SphereGeometry(1, 10, 6);
+  var material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  this.mesh = new THREE.Mesh(geometry, material);
   this.mesh.name = "star";
-}
+};
 
-Star.prototype.rotate = function(){
+Star.prototype.rotate = function () {
   this.mesh.rotation.z += 0.01;
   this.mesh.rotation.y += 0.01;
   this.mesh.rotation.x += 0.01;
-}
+};
 
 // 3D Models
 var sea;
@@ -1009,8 +1053,8 @@ function createPlane() {
 function getPlane(size) {
   var geometry = new THREE.PlaneGeometry(size, size);
   var material = new THREE.MeshStandardMaterial({
-      color: "#15151f",
-      side: THREE.DoubleSide,
+    color: "#15151f",
+    side: THREE.DoubleSide,
   });
   var mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true; // Receive shadow (Nhận đỗ bóng).
@@ -1106,8 +1150,6 @@ function loop() {
     game.baseSpeed +=
       (game.targetBaseSpeed - game.baseSpeed) * deltaTime * 0.02;
     game.speed = game.baseSpeed * game.planeSpeed;
-
-    
   } else if (game.status == "gameover") {
     game.speed *= 0.99;
     airplane.mesh.rotation.z +=
@@ -1115,7 +1157,7 @@ function loop() {
     airplane.mesh.rotation.x += 0.0003 * deltaTime;
     game.planeFallSpeed *= 1.05;
     airplane.mesh.position.y -= game.planeFallSpeed * deltaTime;
-	updateHighScore();
+    updateHighScore();
     if (airplane.mesh.position.y < -200) {
       game.status = "waiting";
     }
@@ -1126,25 +1168,22 @@ function loop() {
     if (airplane.mesh.position.y < game.planeDefaultHeight)
       airplane.mesh.position.y += 0.01;
     updatePlane();
-  }
-  else if (game.status = "custom"){
+  } else if ((game.status = "custom")) {
     header.style.display = "none";
   }
 
-  if (game.level % 2)
-    {
-      // scene.getObjectByName("waves").material.color.set(Colors.blue);
-      scene.remove(scene.getObjectByName("hemisphereLight"));
-      scene.add(hemisphereLight);
-      sky.removeStars();
-      background.style.background = game.dayBackground;
-    }
-    else{
-      // scene.getObjectByName("waves").material.color.set(Colors.nightBlue);
-      scene.remove(scene.getObjectByName("hemisphereLight"));
-      sky.addStar();
-      background.style.background = game.nightBackground;
-    }
+  if (game.level % 2) {
+    // scene.getObjectByName("waves").material.color.set(Colors.blue);
+    scene.remove(scene.getObjectByName("hemisphereLight"));
+    scene.add(hemisphereLight);
+    sky.removeStars();
+    background.style.background = game.dayBackground;
+  } else {
+    // scene.getObjectByName("waves").material.color.set(Colors.nightBlue);
+    scene.remove(scene.getObjectByName("hemisphereLight"));
+    sky.addStar();
+    background.style.background = game.nightBackground;
+  }
 
   airplane.propeller.rotation.x += 0.2 + game.planeSpeed * deltaTime * 0.005;
   sea.mesh.rotation.z += game.speed * deltaTime; //*game.seaRotationSpeed;
@@ -1155,7 +1194,7 @@ function loop() {
 
   coinsHolder.rotateCoins();
   ennemiesHolder.rotateEnnemies();
-  onChange = (document.getElementById("GUI").style.display != "none") ;
+  onChange = document.getElementById("GUI").style.display != "none";
   sky.moveClouds();
   sea.moveWaves();
 
@@ -1182,9 +1221,9 @@ function updateDistance() {
   levelCircle.setAttribute("stroke-dashoffset", d);
 }
 
-function updateHighScore(){
-	if (game.status == "gameover")
-		highScore.innerHTML=Math.floor(Math.max(game.distance, game.highscore));
+function updateHighScore() {
+  if (game.status == "gameover")
+    highScore.innerHTML = Math.floor(Math.max(game.distance, game.highscore));
 }
 
 var blinkEnergy = false;
@@ -1297,7 +1336,7 @@ function normalize(v, vmin, vmax, tmin, tmax) {
   return tv;
 }
 
-function createGui(){
+function createGui() {
   gui = new dat.GUI();
   gui.domElement.id = "GUI";
 
@@ -1306,7 +1345,8 @@ function createGui(){
   var colorElement = null;
   var surfaceElement = null;
 
-  gui.add(option, "Airplane_parts", ["None"].concat(Object.keys(planeSetting)))
+  gui
+    .add(option, "Airplane_parts", ["None"].concat(Object.keys(planeSetting)))
     .onChange(function (value) {
       if (colorElement) {
         gui.remove(colorElement);
@@ -1334,17 +1374,15 @@ function createGui(){
 }
 
 var fieldDistance,
-    energyBar,
-    replayMessage,
-    fieldLevel,
-    levelCircle,
-    highScore,
-    background,
-    header,
-    customOnClick;
-function custom(event){
-  
-}
+  energyBar,
+  replayMessage,
+  fieldLevel,
+  levelCircle,
+  highScore,
+  background,
+  header,
+  customOnClick;
+function custom(event) {}
 function init(event) {
   // UI
 
@@ -1372,10 +1410,8 @@ function init(event) {
   // document.addEventListener("mouseup", handleMouseUp, false);
   document.addEventListener("touchend", handleTouchEnd, false);
   document.addEventListener("keypress", handleKeyPress, false);
-  document.getElementById("GUI").style.display = "none"; 
+  document.getElementById("GUI").style.display = "none";
   loop();
 }
-
-
 
 window.addEventListener("load", init, false);
