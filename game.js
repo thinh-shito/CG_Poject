@@ -1222,8 +1222,10 @@ function updateDistance() {
 }
 
 function updateHighScore() {
-  if (game.status == "gameover")
+  if (game.status == "gameover"){
     highScore.innerHTML = Math.floor(Math.max(game.distance, game.highscore));
+
+  }
 }
 
 var blinkEnergy = false;
