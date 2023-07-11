@@ -33,6 +33,8 @@ var texturePaths = {
   seamless: "./textures/seamless.jpg",
 };
 var onChange = false;
+var highscore = 0;
+
 
 function resetGame() {
   game = {
@@ -46,7 +48,7 @@ function resetGame() {
     speedLastUpdate: 0,
 
     distance: 0,
-    highscore: 0,
+    // highscore: 0,
     ratioSpeedDistance: 50,
     energy: 100,
     ratioSpeedEnergy: 3,
@@ -945,7 +947,7 @@ ParticlesHolder.prototype.spawnParticles = function (
 Coin = function () {
   var geom = new THREE.TetrahedronGeometry(5, 0);
   var mat = new THREE.MeshPhongMaterial({
-    color: 0x009999,
+    color: 0xE80F88,
     shininess: 0,
     specular: 0xffffff,
 
@@ -1223,7 +1225,10 @@ function updateDistance() {
 
 function updateHighScore() {
   if (game.status == "gameover")
-    highScore.innerHTML = Math.floor(Math.max(game.distance, game.highscore));
+  {
+    highscore = Math.floor(Math.max(game.distance, highscore));
+    highScore.innerHTML = highscore;
+  }
 }
 
 var blinkEnergy = false;
