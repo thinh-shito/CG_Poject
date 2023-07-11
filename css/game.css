@@ -43,7 +43,7 @@
 }
 
 .header h2 {
-	font-size: 0.585em;
+	font-size: 0.7em;
 	margin: 0.25em 0;
 	white-space: nowrap;
 	text-indent: 1em;
@@ -154,15 +154,15 @@
 
 .message--instructions {
 	font-family: 'Playfair Display';
-	font-size: 0.85em;
+	font-size: 1em;
 	bottom: 8vh;
 	letter-spacing: 0.2em;
-	color: #68c3c0;
+	color: #FFC0CB;
 }
 
 .message--instructions span {
 	display: block;
-	color: #d6483b;
+	color: #ff8a72;
 	white-space: nowrap;
 }
 
