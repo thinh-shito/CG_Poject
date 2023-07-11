@@ -1,6 +1,7 @@
 
 <h1 align = "center"> Computer Graphic Project</h1>
-<h2>Sơ lược đồ án<h2>
+
+## Sơ lược đồ án
 <div>
   <img src = "./img/day.png"></img>
   
@@ -18,7 +19,9 @@
     <li><b>High score:</b> Kỉ lục quãng đường xa nhất mà máy bay đã bay được</li>
   </ul>
 </div>
-<h2>Thông tin sinh viên<h2>
+
+      
+## Thông tin sinh viên
 <table >
   <tr>
     <th>Họ và tên sinh viên</th>
